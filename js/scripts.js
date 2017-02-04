@@ -13,8 +13,19 @@ var rightWall = new Wall(500,0,505,0);
 var topWall = new Wall(0,0,0,505);
 var bottomWall = new Wall(0,500,0,505);
 wallArray.push(leftWall,rightWall,topWall,bottomWall);
-var level1 = new Level(1);
 var roomArray = [];
+var minimap = new Minimap();
+var game;
+
+//////////GAME OBJECT
+function Game() {
+  this.player = new Player
+  this.level = new Level(1);
+}
+Game.prototype.nextLevel = function(){
+  this.level = new Level(1);
+}
+
 
 ///////////PLAYER OBJECT
 function Player() {
@@ -25,9 +36,10 @@ function Player() {
   this.dx=0,
   this.dy=0,
   this.moveSpeed=5,
-  this.items='',
-  this.roomLocation = 0;
-  this.health = 100;
+  this.itemArray=[],
+  this.roomLocation = 0,
+  this.health = 100,
+  this.level = 1
 }
 Player.prototype.draw = function(ctx) {
   ctx.beginPath();
@@ -36,178 +48,50 @@ Player.prototype.draw = function(ctx) {
   ctx.fill();
   ctx.closePath();
 }
-Player.prototype.move = function() {
+Player.prototype.move = function(level,game) {
   if(rightPressed) {
     this.xPos += this.moveSpeed;
-    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.xPos -= this.moveSpeed;
     }
-    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
-
-      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+      this.itemArray.push('item')
+      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
     }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
-      console.log('here')
-      this.roomLocation += 3;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
-      this.roomLocation -= 3;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
-      this.roomLocation -= 1;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
-      this.roomLocation += 1;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
+    doorCollision(this,level,game);
   };
   if(leftPressed) {
     this.xPos -= this.moveSpeed;
-    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.xPos += this.moveSpeed;
     }
-    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
-
-      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+      this.itemArray.push('item')
+      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
     }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
-      this.roomLocation += 3;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
-      this.roomLocation -= 3;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
-      this.roomLocation -= 1;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
-      this.roomLocation += 1;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
+    doorCollision(this,level,game);
   }
   if(upPressed) {
     this.yPos -= this.moveSpeed;
-    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.yPos += this.moveSpeed;
     }
-    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
-
-      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+      this.itemArray.push('item')
+      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
     }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
-      this.roomLocation += 3;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
-      this.roomLocation -= 3;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
-      this.roomLocation -= 1;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
-      this.roomLocation += 1;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
+    doorCollision(this,level,game);
   }
   if(downPressed) {
     this.yPos += this.moveSpeed;
-    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.yPos -= this.moveSpeed;
     }
-    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
-
-      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+      this.itemArray.push('item')
+      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
     }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
-      this.roomLocation += 3;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
-      this.roomLocation -= 3;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
-      this.roomLocation -= 1;
-      if (this.roomLocation < 0) {
-        this.roomLocation = 0;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
-    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
-      this.roomLocation += 1;
-      if (this.roomLocation > 8) {
-        this.roomLocation = 8;
-      }
-      this.xPos = 0;
-      this.ypos = 0;
-    }
+    doorCollision(this,level,game);
   }
 }
 
@@ -251,6 +135,13 @@ Item.prototype.draw = function(ctx) {
   ctx.fill();
   ctx.closePath();
 }
+function randomItem(room) {
+  var newItem = new Item(randomNumberGrid(1,9),randomNumberGrid(1,9),50,50)
+  if (hardCollision(newItem,room.roomWallArray)) {
+    newItem = new Item(randomNumberGrid(1,9),randomNumberGrid(1,9),50,50)
+  }
+  return newItem;
+}
 
 ///////////ROOM OBJECT
 function Room() {
@@ -264,13 +155,14 @@ Room.prototype.fill = function(walls) {
   for (var i=0;i<walls;i++) {
     this.roomWallArray.push(randomWall());
   }
-  this.roomItemArray.push(new Item (100,100,50,50,'health'));
-  this.roomDoorArray.push(new Door (200,0,50,50,'top'));
-  this.roomDoorArray.push(new Door (200,450,50,50,'bottom'));
-  this.roomDoorArray.push(new Door (0,200,50,50,'left'));
-  this.roomDoorArray.push(new Door (450,200,50,50,'right'));
+  this.roomItemArray.push(randomItem(this));
+  this.roomDoorArray.push(new Door (225,-40,50,50,'top'));
+  this.roomDoorArray.push(new Door (225,490,50,50,'bottom'));
+  this.roomDoorArray.push(new Door (-40,225,50,50,'left'));
+  this.roomDoorArray.push(new Door (490,225,50,10,'right'));
+  this.roomDoorArray.push(new Door (450,0,50,50,'levelstairs'))
 }
-Room.prototype.draw = function(ctx) {
+Room.prototype.draw = function(ctx,player) {
   for (var i=0;i<this.roomWallArray.length;i++){
     ctx.beginPath();
     ctx.rect(this.roomWallArray[i].xPos,this.roomWallArray[i].yPos,this.roomWallArray[i].width,this.roomWallArray[i].height);
@@ -281,8 +173,20 @@ Room.prototype.draw = function(ctx) {
   for (var i=0;i<this.roomItemArray.length;i++){
     this.roomItemArray[i].draw(ctx);
   }
-  for (var i=0;i<this.roomDoorArray.length;i++){
-    this.roomDoorArray[i].draw(ctx);
+  if (player.roomLocation < 6) {
+    this.roomDoorArray[0].draw(ctx);
+  }
+  if (player.roomLocation%3 < 2) {
+    this.roomDoorArray[3].draw(ctx);
+  }
+  if (player.roomLocation > 2) {
+    this.roomDoorArray[1].draw(ctx);
+  }
+  if (player.roomLocation%3 > 0) {
+    this.roomDoorArray[2].draw(ctx);
+  }
+  if (player.roomLocation === 4 && player.itemArray.length > 8) {
+    this.roomDoorArray[4].draw(ctx);
   }
 }
 
@@ -296,6 +200,20 @@ Level.prototype.newLevel = function(){
     this.levelRoomArray[i] = new Room();
     this.levelRoomArray[i].fill(2);
   }
+}
+
+//////////MINIMAP OBJECT
+function Minimap() {
+  this.mapRoomArray = []
+}
+Minimap.prototype.draw = function(ctx,room) {
+  ctx.rect(500,0,100,100);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.rect(500+((room%3)*33),66-(Math.floor(room/3)*33),33,33);
+  ctx.fillStyle = 'green';
+  ctx.fill();
+  ctx.closePath();
 }
 
 //////////DOOR OBJECT
@@ -312,6 +230,48 @@ Door.prototype.draw = function(ctx) {
   ctx.fillStyle = "yellow";
   ctx.fill();
   ctx.closePath();
+}
+function doorCollision(player,level,game) {
+  if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[0]) || ySoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[0])) {
+    player.roomLocation += 3;
+    if (player.roomLocation > 8) {
+      player.roomLocation = 8;
+    }
+    player.xPos = 225;
+    player.yPos = 440;
+  }
+  if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[1]) || ySoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[1])) {
+    player.roomLocation -= 3;
+    if (player.roomLocation < 0) {
+      player.roomLocation = 0;
+    }
+    player.xPos = 225;
+    player.yPos = 10;
+  }
+  if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[2]) || ySoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[2])) {
+    player.roomLocation -= 1;
+    if (player.roomLocation < 0) {
+      player.roomLocation = 0;
+    }
+    player.xPos = 440;
+    player.yPos = 225;
+  }
+  if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[3]) || ySoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[3])) {
+    player.roomLocation += 1;
+    if (player.roomLocation > 8) {
+      player.roomLocation = 8;
+    }
+    player.xPos = 10;
+    player.yPos = 225;
+  }
+  if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[4]) || ySoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[4])) {
+    if (player.roomLocation === 4 && player.itemArray.length > 7) {
+      player.level += 1;
+      player.xPos = 0;
+      player.yPos = 0;
+      game.nextLevel();
+    }
+  }
 }
 
 ///////////COLLISION DETECTION
@@ -373,7 +333,6 @@ function ySoftCollision(object,obstacle) {
 
   }
 }
-
 function softCollision(object,itemArray) {
   for (var i=0;i<itemArray.length;i++) {
     if(xSoftCollision(object,itemArray[i])) {
@@ -399,9 +358,9 @@ function randomNumberGrid(min,max) {
 $(function() {
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d");
-  var player = new Player;
-  level1.newLevel();
 
+  var game = new Game();
+  game.level.newLevel();
 
 
   //////////////CONTROLLER
@@ -434,10 +393,11 @@ $(function() {
   ///////////////DRAW FUNCTION
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    player.move();
-    player.draw(ctx);
+    game.player.move(game.level,game);
+    game.player.draw(ctx);
     wallArrayDraw(ctx);
-    level1.levelRoomArray[player.roomLocation].draw(ctx);
+    game.level.levelRoomArray[game.player.roomLocation].draw(ctx,game.player);
+    minimap.draw(ctx,game.player.roomLocation);
   }
   drawInterval = setInterval(draw, 10);
 })
