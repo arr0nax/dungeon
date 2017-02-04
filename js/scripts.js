@@ -9,9 +9,9 @@ var dPressed = false;
 var wPressed = false;
 var wallArray = [];
 var leftWall = new Wall(0,0,505,0);
-var rightWall = new Wall(500,-5,505,5);
+var rightWall = new Wall(500,0,505,0);
 var topWall = new Wall(0,0,0,505);
-var bottomWall = new Wall(500,-5,5,505);
+var bottomWall = new Wall(0,500,0,505);
 wallArray.push(leftWall,rightWall,topWall,bottomWall);
 var level1 = new Level(1);
 var roomArray = [];
@@ -27,6 +27,7 @@ function Player() {
   this.moveSpeed=5,
   this.items='',
   this.roomLocation = 0;
+  this.health = 100;
 }
 Player.prototype.draw = function(ctx) {
   ctx.beginPath();
@@ -36,29 +37,176 @@ Player.prototype.draw = function(ctx) {
   ctx.closePath();
 }
 Player.prototype.move = function() {
-  console.log('here')
   if(rightPressed) {
     this.xPos += this.moveSpeed;
-    if (wallCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.xPos -= this.moveSpeed;
+    }
+    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
+
+      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
+      console.log('here')
+      this.roomLocation += 3;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
+      this.roomLocation -= 3;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
+      this.roomLocation -= 1;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
+      this.roomLocation += 1;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
     }
   };
   if(leftPressed) {
     this.xPos -= this.moveSpeed;
-    if (wallCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.xPos += this.moveSpeed;
+    }
+    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
+
+      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
+      this.roomLocation += 3;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
+      this.roomLocation -= 3;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
+      this.roomLocation -= 1;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
+      this.roomLocation += 1;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
     }
   }
   if(upPressed) {
     this.yPos -= this.moveSpeed;
-    if (wallCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.yPos += this.moveSpeed;
+    }
+    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
+
+      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
+      this.roomLocation += 3;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
+      this.roomLocation -= 3;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
+      this.roomLocation -= 1;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
+      this.roomLocation += 1;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
     }
   }
   if(downPressed) {
     this.yPos += this.moveSpeed;
-    if (wallCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+    if (hardCollision(this,level1.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
       this.yPos -= this.moveSpeed;
+    }
+    if (softCollision(this,level1.levelRoomArray[this.roomLocation].roomItemArray)) {
+
+      level1.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[0])) {
+      this.roomLocation += 3;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[1])) {
+      this.roomLocation -= 3;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[2])) {
+      this.roomLocation -= 1;
+      if (this.roomLocation < 0) {
+        this.roomLocation = 0;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
+    }
+    if (xSoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3]) || ySoftCollision(this,level1.levelRoomArray[this.roomLocation].roomDoorArray[3])) {
+      this.roomLocation += 1;
+      if (this.roomLocation > 8) {
+        this.roomLocation = 8;
+      }
+      this.xPos = 0;
+      this.ypos = 0;
     }
   }
 }
@@ -88,9 +236,27 @@ function wallArrayDraw(ctx) {
   }
 }
 
+////////////ITEM OBJECT
+function Item(xPos,yPos,height,width,type) {
+  this.xPos=xPos,
+  this.yPos=yPos,
+  this.height=height,
+  this.width=width,
+  this.type=type
+}
+Item.prototype.draw = function(ctx) {
+  ctx.beginPath();
+  ctx.rect(this.xPos,this.yPos,this.width,this.height);
+  ctx.fillStyle = "blue";
+  ctx.fill();
+  ctx.closePath();
+}
+
 ///////////ROOM OBJECT
 function Room() {
   this.roomWallArray = [],
+  this.roomItemArray = [],
+  this.roomDoorArray = [],
   this.items = '',
   this.walls = ''
 }
@@ -98,6 +264,11 @@ Room.prototype.fill = function(walls) {
   for (var i=0;i<walls;i++) {
     this.roomWallArray.push(randomWall());
   }
+  this.roomItemArray.push(new Item (100,100,50,50,'health'));
+  this.roomDoorArray.push(new Door (200,0,50,50,'top'));
+  this.roomDoorArray.push(new Door (200,450,50,50,'bottom'));
+  this.roomDoorArray.push(new Door (0,200,50,50,'left'));
+  this.roomDoorArray.push(new Door (450,200,50,50,'right'));
 }
 Room.prototype.draw = function(ctx) {
   for (var i=0;i<this.roomWallArray.length;i++){
@@ -106,6 +277,12 @@ Room.prototype.draw = function(ctx) {
     ctx.fillStyle = "red";
     ctx.fill();
     ctx.closePath();
+  }
+  for (var i=0;i<this.roomItemArray.length;i++){
+    this.roomItemArray[i].draw(ctx);
+  }
+  for (var i=0;i<this.roomDoorArray.length;i++){
+    this.roomDoorArray[i].draw(ctx);
   }
 }
 
@@ -121,26 +298,36 @@ Level.prototype.newLevel = function(){
   }
 }
 
-
-////////////ITEM OBJECT
-function Item(xPos,yPos,height,width,type) {}
+//////////DOOR OBJECT
+function Door(xPos,yPos,height,width,location) {
+  this.xPos=xPos,
+  this.yPos=yPos,
+  this.height=height,
+  this.width=width,
+  this.location=location
+}
+Door.prototype.draw = function(ctx) {
+  ctx.beginPath();
+  ctx.rect(this.xPos,this.yPos,this.width,this.height);
+  ctx.fillStyle = "yellow";
+  ctx.fill();
+  ctx.closePath();
+}
 
 ///////////COLLISION DETECTION
 function xCollision(object,obstacle) {
-  if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
+  if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width) && (object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
     return 'x';
-    console.log('here')
 
   }
 }
 function yCollision(object,obstacle) {
-  if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
+  if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)&&(object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
     return 'y';
-    console.log('here')
 
   }
 }
-function wallCollision(object,obstacleArray) {
+function hardCollision(object,obstacleArray) {
   for (var i=0;i<obstacleArray.length;i++) {
     if(xCollision(object,obstacleArray[i])) {
       return 'x'
@@ -152,16 +339,14 @@ function wallCollision(object,obstacleArray) {
 }
 
 function xEdgeCollision(object,obstacle) {
-  if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
+  if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width) && (object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
     return 'x';
-    console.log('here')
 
   }
 }
 function yEdgeCollision(object,obstacle) {
-  if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
+  if ((object.yPos + object.height + 5 > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height) && (object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
     return 'y';
-    console.log('here')
 
   }
 }
@@ -171,6 +356,30 @@ function edgeCollision(object,obstacleArray) {
       return 'x'
     };
     if(yEdgeCollision(object,obstacleArray[i])) {
+      return 'y'
+    };
+  }
+}
+
+function xSoftCollision(object,obstacle) {
+  if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width) && (object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
+    return 'x';
+
+  }
+}
+function ySoftCollision(object,obstacle) {
+  if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)&&(object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
+    return 'y';
+
+  }
+}
+
+function softCollision(object,itemArray) {
+  for (var i=0;i<itemArray.length;i++) {
+    if(xSoftCollision(object,itemArray[i])) {
+      return 'x'
+    };
+    if(ySoftCollision(object,itemArray[i])) {
       return 'y'
     };
   }
