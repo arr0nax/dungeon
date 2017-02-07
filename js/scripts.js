@@ -22,8 +22,9 @@ function Game() {
   this.player = new Player
   this.level = new Level(1);
 }
-Game.prototype.nextLevel = function(){
+Game.prototype.nextLevel = function(player){
   this.level = new Level(1);
+  this.level.newLevel();
 }
 
 
@@ -175,15 +176,23 @@ Room.prototype.draw = function(ctx,player) {
   }
   if (player.roomLocation < 6) {
     this.roomDoorArray[0].draw(ctx);
+  } else {
+    this.roomDoorArray[0] = 0;
   }
   if (player.roomLocation%3 < 2) {
     this.roomDoorArray[3].draw(ctx);
+  } else {
+    this.roomDoorArray[3] = 0;
   }
   if (player.roomLocation > 2) {
     this.roomDoorArray[1].draw(ctx);
+  } else {
+    this.roomDoorArray[1] = 0;
   }
   if (player.roomLocation%3 > 0) {
     this.roomDoorArray[2].draw(ctx);
+  } else {
+    this.roomDoorArray[2] = 0;
   }
   if (player.roomLocation === 4 && player.itemArray.length > 8) {
     this.roomDoorArray[4].draw(ctx);
@@ -270,6 +279,7 @@ function doorCollision(player,level,game) {
       player.xPos = 0;
       player.yPos = 0;
       game.nextLevel();
+
     }
   }
 }
