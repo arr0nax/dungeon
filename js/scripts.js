@@ -19,8 +19,9 @@ var game;
 
 //////////GAME OBJECT
 function Game() {
-  this.player = new Player
+  this.player = new Player;
   this.level = new Level(1);
+  this.enemy = new Enemy;
 }
 Game.prototype.nextLevel = function(player){
   this.level = new Level(1);
@@ -95,6 +96,83 @@ Player.prototype.move = function(level,game) {
     doorCollision(this,level,game);
   }
 }
+
+
+////////////ENEMY OBJECT
+function Enemy() {
+  this.xPos=450,
+  this.yPos=450,
+  this.height=50,
+  this.width=50,
+  this.dx=0,
+  this.dy=0,
+  this.moveSpeed=5,
+  this.itemArray=[],
+  this.roomLocation = 0,
+  this.health = 100,
+  this.level = 1
+  }
+
+a  if (this.roomLocation === player.roomLocation) {
+    ctx.beginPath();
+    ctx.rect(this.xPos,this.yPos,this.width,this.height);
+    ctx.fillStyle = "green";
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+// Enemy.protoype.think = function() {
+//
+// }
+
+  Enemy.prototype.move = function(level,game) {
+    if(rightPressed) {
+      this.xPos += this.moveSpeed;
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+        this.xPos -= this.moveSpeed;
+      }
+      if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+        this.itemArray.push('item')
+        level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      }
+      doorCollision(this,level,game);
+    };
+    if(leftPressed) {
+      this.xPos -= this.moveSpeed;
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+        this.xPos += this.moveSpeed;
+      }
+      if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+        this.itemArray.push('item')
+        level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      }
+      doorCollision(this,level,game);
+    }
+    if(upPressed) {
+      this.yPos -= this.moveSpeed;
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+        this.yPos += this.moveSpeed;
+      }
+      if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+        this.itemArray.push('item')
+        level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      }
+      doorCollision(this,level,game);
+    }
+    if(downPressed) {
+      this.yPos += this.moveSpeed;
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+        this.yPos -= this.moveSpeed;
+      }
+      if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
+        this.itemArray.push('item')
+        level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      }
+      doorCollision(this,level,game);
+    }
+  }
+
 
 
 ///////////WALL OBJECT
@@ -404,6 +482,8 @@ $(function() {
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     game.player.move(game.level,game);
+    game.enemy.move(game.level,game);
+    game.enemy.draw(ctx,game.player);
     game.player.draw(ctx);
     wallArrayDraw(ctx);
     game.level.levelRoomArray[game.player.roomLocation].draw(ctx,game.player);
