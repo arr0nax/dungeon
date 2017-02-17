@@ -3,10 +3,7 @@ var leftPressed = false;
 var upPressed = false;
 var rightPressed = false;
 var downPressed = false;
-var aPressed = false;
-var sPressed = false;
-var dPressed = false;
-var wPressed = false;
+var spacePressed = false;
 var wallArray = [];
 var leftWall = new Wall(0,0,505,0);
 var rightWall = new Wall(500,0,505,0);
@@ -20,12 +17,14 @@ var game;
 //////////GAME OBJECT
 function Game() {
   this.player = new Player;
+  this.player.weapon = new Weapon(this.player);
   this.level = new Level(1);
   this.enemy = new Enemy;
 }
 Game.prototype.nextLevel = function(player){
   this.level = new Level(1);
   this.level.newLevel();
+  this.player.itemArray = [];
 }
 
 
@@ -41,7 +40,8 @@ function Player() {
   this.itemArray=[],
   this.roomLocation = 0,
   this.health = 100,
-  this.level = 1
+  this.level = 1,
+  this.weapon
 }
 Player.prototype.draw = function(ctx) {
   ctx.beginPath();
@@ -53,7 +53,7 @@ Player.prototype.draw = function(ctx) {
 Player.prototype.move = function(level,game) {
   if(rightPressed) {
     this.xPos += this.moveSpeed;
-    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy') {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
       console.log(level.levelRoomArray[this.roomLocation].roomWallArray)
       this.xPos -= this.moveSpeed;
     }
@@ -65,7 +65,7 @@ Player.prototype.move = function(level,game) {
   };
   if(leftPressed) {
     this.xPos -= this.moveSpeed;
-    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy') {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
       this.xPos += this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
@@ -76,7 +76,7 @@ Player.prototype.move = function(level,game) {
   }
   if(upPressed) {
     this.yPos -= this.moveSpeed;
-    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy') {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
       this.yPos += this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
@@ -87,7 +87,7 @@ Player.prototype.move = function(level,game) {
   }
   if(downPressed) {
     this.yPos += this.moveSpeed;
-    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy') {
+    if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
       this.yPos -= this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
@@ -97,8 +97,38 @@ Player.prototype.move = function(level,game) {
     doorCollision(this,level,game);
   }
 }
+Player.prototype.swing = function(ctx,game) {
+  if (spacePressed) {
+    this.weapon = new Weapon(this);
+    this.weapon.draw(ctx);
+    console.log(this.weapon)
+    console.log(game.enemy)
+    if (xSoftCollision(this.weapon, game.enemy) === 'x') {
+      console.log('hello')
+      if (game.enemy.itemArray.length > 0) {
+        game.level.levelRoomArray[game.player.roomLocation].roomItemArray = game.level.levelRoomArray[game.player.roomLocation].roomItemArray.concat(randomItem(game.level.levelRoomArray[game.player.roomLocation]));
+      }
+      game.enemy = new Enemy
+    };
+  }
+}
 
 
+////////WEAPON OBJECT
+function Weapon(player) {
+  this.damage = 0,
+  this.height = 150,
+  this.width = 150,
+  this.xPos = player.xPos - 50,
+  this.yPos = player.yPos - 50
+}
+Weapon.prototype.draw = function(ctx) {
+  ctx.beginPath();
+  ctx.rect(this.xPos,this.yPos,this.width,this.height);
+  ctx.fillStyle = "yellow";
+  ctx.fill();
+  ctx.closePath();
+}
 ////////////ENEMY OBJECT
 function Enemy() {
   this.xPos=450,
@@ -112,16 +142,18 @@ function Enemy() {
   this.roomLocation = 0,
   this.health = 100,
   this.level = 1
+}
+
+  Enemy.prototype.draw = function(ctx,player) {
+    if (this.roomLocation === player.roomLocation) {
+      ctx.beginPath();
+      ctx.rect(this.xPos,this.yPos,this.width,this.height);
+      ctx.fillStyle = "green";
+      ctx.fill();
+      ctx.closePath();
+    }
   }
 
-a  if (this.roomLocation === player.roomLocation) {
-    ctx.beginPath();
-    ctx.rect(this.xPos,this.yPos,this.width,this.height);
-    ctx.fillStyle = "green";
-    ctx.fill();
-    ctx.closePath();
-  }
-}
 
 // Enemy.protoype.think = function() {
 //
@@ -224,28 +256,28 @@ function randomItem(room) {
 }
 
 ////////////BALL OBJECT
-function Ball(xPos,yPos,width,height, dx, dy) {
-  this.xPos = xPos;
-  this.yPos = yPos;
-  this.width = width;
-  this.height = height;
-  this.dx = dx;
-  this.dy = dy;
-}
-Ball.prototype.draw = function(canvasContext) {
-  canvasContext.beginPath();
-  canvasContext.rect(this.xPos, this.yPos, this.width, this.height);
-  canvasContext.fillStyle = 'red'
-  canvasContext.fill();
-  canvasContext.closePath();
-}
-function randomBall() {
-  var dx = 3;
-  var dy = 3;
-  var randomBallX = randomNumberGrid(1,9);
-  var randomBallY = randomNumberGrid(1,9);
-  return new Ball(randomBallX, randomBallY, 40, 40, dx, dy);
-}
+// function Ball(xPos,yPos,width,height, dx, dy) {
+//   this.xPos = xPos;
+//   this.yPos = yPos;
+//   this.width = width;
+//   this.height = height;
+//   this.dx = dx;
+//   this.dy = dy;
+// }
+// Ball.prototype.draw = function(canvasContext) {
+//   canvasContext.beginPath();
+//   canvasContext.rect(this.xPos, this.yPos, this.width, this.height);
+//   canvasContext.fillStyle = 'red'
+//   canvasContext.fill();
+//   canvasContext.closePath();
+// }
+// function randomBall() {
+//   var dx = 3;
+//   var dy = 3;
+//   var randomBallX = randomNumberGrid(1,9);
+//   var randomBallY = randomNumberGrid(1,9);
+//   return new Ball(randomBallX, randomBallY, 40, 40, dx, dy);
+// }
 
 
 
@@ -268,9 +300,9 @@ Room.prototype.fill = function(walls,balls) {
   this.roomDoorArray.push(new Door (-40,225,50,50,'left'));
   this.roomDoorArray.push(new Door (490,225,50,10,'right'));
   this.roomDoorArray.push(new Door (450,0,50,50,'levelstairs'));
-  for (var i=0;i<balls;i++) {
-    this.roomBallArray.push(randomBall());
-  }
+  // for (var i=0;i<balls;i++) {
+  //   this.roomBallArray.push(randomBall());
+  // }
 }
 Room.prototype.draw = function(ctx,player) {
   for (var i=0;i<this.roomWallArray.length;i++){
@@ -412,15 +444,7 @@ function hardCollision(object,obstacleArray) {
     var xCollider = xCollision(object,obstacleArray[i])
     var yCollider = yCollision(object,obstacleArray[i])
     if(xCollider+yCollider === 'xy') {
-      console.log('xy')
       return 'xy'
-    } else if (xCollider) {
-      console.log('x')
-      return 'x'
-
-    } else if (yCollider) {
-      console.log('y')
-      return 'y'
     }
   }
 }
@@ -432,7 +456,7 @@ function xEdgeCollision(object,obstacle) {
   }
 }
 function yEdgeCollision(object,obstacle) {
-  if ((object.yPos + object.height + 5 > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height) && (object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
+  if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height) && (object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
     return 'y';
     console.log('y')
   }
@@ -494,6 +518,8 @@ $(function() {
       leftPressed = true;
     } else if(e.keyCode === 38) {
       upPressed = true;
+    } else if(e.keyCode === 32) {
+      spacePressed = true;
     }
   }
   function keyUpHandler(e) {
@@ -505,6 +531,8 @@ $(function() {
       leftPressed = false;
     } else if(e.keyCode === 38) {
       upPressed = false;
+    } else if(e.keyCode === 32) {
+      spacePressed = false;
     }
   }
 
@@ -514,6 +542,7 @@ $(function() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     game.player.move(game.level,game);
     game.enemy.move(game.level,game);
+    game.player.swing(ctx,game);
     game.enemy.draw(ctx,game.player);
     game.player.draw(ctx);
     wallArrayDraw(ctx);
