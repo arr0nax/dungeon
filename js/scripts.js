@@ -106,7 +106,7 @@ Player.prototype.swing = function(ctx,game) {
     if (xSoftCollision(this.weapon, game.enemy) === 'x') {
       console.log('hello')
       if (game.enemy.itemArray.length > 0) {
-        game.level.levelRoomArray[game.player.roomLocation].roomItemArray = game.level.levelRoomArray[game.player.roomLocation].roomItemArray.concat(randomItem(game.level.levelRoomArray[game.player.roomLocation]));
+        game.level.levelRoomArray[game.player.roomLocation].roomItemArray = game.level.levelRoomArray[game.player.roomLocation].roomItemArray.concat(new Item(game.enemy.xPos, game.enemy.yPos, 50, 50));
       }
       game.enemy = new Enemy
     };
