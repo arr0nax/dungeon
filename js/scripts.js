@@ -26,6 +26,18 @@ Game.prototype.nextLevel = function(player){
   this.level.newLevel();
   this.player.itemArray = [];
 }
+Game.prototype.newEnemy =  function() {
+  if (this.enemy.itemArray.length > 0) {
+    for (var i=0; i < this.enemy.itemArray.length; i++) {
+      this.level.levelRoomArray[this.player.roomLocation].roomItemArray = this.level.levelRoomArray[this.player.roomLocation].roomItemArray.concat(new Item(this.enemy.xPos+(5*i), this.enemy.yPos+(5*i), 25, 25));
+    }
+  }
+  this.enemy = new Enemy
+}
+
+Game.prototype.newPlayer = function() {
+  this.player = new Player;
+}
 
 
 ///////////PLAYER OBJECT
@@ -104,11 +116,7 @@ Player.prototype.swing = function(ctx,game) {
     console.log(this.weapon)
     console.log(game.enemy)
     if (xSoftCollision(this.weapon, game.enemy) === 'x') {
-      console.log('hello')
-      if (game.enemy.itemArray.length > 0) {
-        game.level.levelRoomArray[game.player.roomLocation].roomItemArray = game.level.levelRoomArray[game.player.roomLocation].roomItemArray.concat(new Item(game.enemy.xPos, game.enemy.yPos, 50, 50));
-      }
-      game.enemy = new Enemy
+      game.newEnemy();
     };
   }
 }
@@ -153,6 +161,8 @@ function Enemy() {
       ctx.closePath();
     }
   }
+
+
 
 
 // Enemy.protoype.think = function() {
@@ -222,9 +232,14 @@ Wall.prototype.draw = function(ctx) {
   ctx.fill();
   ctx.closePath();
 }
-function randomWall() {
-  var newWall = new Wall(randomNumberGrid(2,8),randomNumberGrid(2,8),50,50)
-  return newWall;
+function randomWall(walls) {
+  var seed = [5,5]
+  var newWalls = [];
+  for (var i=0;i<walls;i++) {
+    var newWall = new Wall(randomNumberGrid(seed[0]-i/2,seed[1]+i/2),randomNumberGrid(seed[0]-(i/2),seed[1]+i/2),50,50)
+    newWalls.push(newWall);
+  }
+  return newWalls;
 }
 function wallArrayDraw(ctx) {
   for (var i=0;i<wallArray.length;i++) {
@@ -249,7 +264,7 @@ Item.prototype.draw = function(ctx) {
 }
 function randomItem(room) {
   var newItem = new Item(randomNumberGrid(1,9),randomNumberGrid(1,9),50,50)
-  if (hardCollision(newItem,room.roomWallArray)) {
+  while (hardCollision(newItem,room.roomWallArray)) {
     newItem = new Item(randomNumberGrid(1,9),randomNumberGrid(1,9),50,50)
   }
   return newItem;
@@ -291,9 +306,7 @@ function Room() {
   this.walls = ''
 }
 Room.prototype.fill = function(walls,balls) {
-  for (var i=0;i<walls;i++) {
-    this.roomWallArray.push(randomWall());
-  }
+  this.roomWallArray = (randomWall(walls));
   this.roomItemArray.push(randomItem(this));
   this.roomDoorArray.push(new Door (225,-40,50,50,'top'));
   this.roomDoorArray.push(new Door (225,490,50,50,'bottom'));
@@ -351,7 +364,7 @@ function Level(difficulty) {
 Level.prototype.newLevel = function(){
   for (var i=0;i<9;i++) {
     this.levelRoomArray[i] = new Room();
-    this.levelRoomArray[i].fill(2,2);
+    this.levelRoomArray[i].fill(5,2);
   }
 }
 
