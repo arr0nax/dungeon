@@ -12,6 +12,7 @@ var bottomWall = new Wall(0,500,0,505);
 wallArray.push(leftWall,rightWall,topWall,bottomWall);
 var roomArray = [];
 var minimap = new Minimap();
+var inventory = new Inventory();
 var game;
 
 //////////GAME OBJECT
@@ -29,7 +30,7 @@ Game.prototype.nextLevel = function(player){
 Game.prototype.newEnemy =  function() {
   if (this.enemy.itemArray.length > 0) {
     for (var i=0; i < this.enemy.itemArray.length; i++) {
-      this.level.levelRoomArray[this.player.roomLocation].roomItemArray = this.level.levelRoomArray[this.player.roomLocation].roomItemArray.concat(new Item(this.enemy.xPos+(5*i), this.enemy.yPos+(5*i), 25, 25));
+       this.level.levelRoomArray[this.enemy.roomLocation].roomItemArray.push(new Item(this.enemy.xPos+(5*i), this.enemy.yPos+(5*i), 25, 25));
     }
   }
   this.enemy = new Enemy
@@ -66,7 +67,6 @@ Player.prototype.move = function(level,game) {
   if(rightPressed) {
     this.xPos += this.moveSpeed;
     if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
-      console.log(level.levelRoomArray[this.roomLocation].roomWallArray)
       this.xPos -= this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
@@ -79,6 +79,7 @@ Player.prototype.move = function(level,game) {
         }
       }
     }
+    enemyCollision(game);
     doorCollision(this,level,game);
   }
 
@@ -97,7 +98,7 @@ Player.prototype.move = function(level,game) {
         }
       }
     }
-
+    enemyCollision(game);
     doorCollision(this,level,game);
   }
   if(upPressed) {
@@ -115,7 +116,7 @@ Player.prototype.move = function(level,game) {
         }
       }
     }
-
+    enemyCollision(game);
     doorCollision(this,level,game);
   }
   if(downPressed) {
@@ -133,7 +134,7 @@ Player.prototype.move = function(level,game) {
         }
       }
     }
-
+    enemyCollision(game);
     doorCollision(this,level,game);
   }
 }
@@ -141,11 +142,7 @@ Player.prototype.swing = function(ctx,game) {
   if (spacePressed) {
     this.weapon = new Weapon(this);
     this.weapon.draw(ctx);
-    console.log(this.weapon)
-    console.log(game.enemy)
-    if (xSoftCollision(this.weapon, game.enemy) === 'x') {
-      game.newEnemy();
-    };
+    game.newEnemy();
   }
 }
 
@@ -171,6 +168,8 @@ function Enemy() {
   this.yPos=450,
   this.height=50,
   this.width=50,
+  this.bubbleheight = 200,
+  this.bubblewidth = 200,
   this.dx=0,
   this.dy=0,
   this.moveSpeed=5,
@@ -182,6 +181,11 @@ function Enemy() {
 
   Enemy.prototype.draw = function(ctx,player) {
     if (this.roomLocation === player.roomLocation) {
+      ctx.beginPath();
+      ctx.rect(this.xPos-75,this.yPos-75,this.bubblewidth,this.bubbleheight);
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+      ctx.closePath();
       ctx.beginPath();
       ctx.rect(this.xPos,this.yPos,this.width,this.height);
       ctx.fillStyle = "green";
@@ -211,6 +215,7 @@ function Enemy() {
         level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
       }
       doorCollision(this,level,game);
+      enemyCollision(game);
     };
     if(leftPressed) {
       this.xPos -= this.moveSpeed;
@@ -225,6 +230,7 @@ function Enemy() {
         level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
       }
       doorCollision(this,level,game);
+      enemyCollision(game);
     }
     if(upPressed) {
       this.yPos -= this.moveSpeed;
@@ -239,6 +245,7 @@ function Enemy() {
         level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
       }
       doorCollision(this,level,game);
+      enemyCollision(game);
     }
     if(downPressed) {
       this.yPos += this.moveSpeed;
@@ -253,6 +260,7 @@ function Enemy() {
         level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
       }
       doorCollision(this,level,game);
+      enemyCollision(game);
     }
   }
 
@@ -276,7 +284,7 @@ function randomWall(walls) {
   var seed = [5,5]
   var newWalls = [];
   for (var i=0;i<walls;i++) {
-    var newWall = new Wall(randomNumberGrid(seed[0]-i/2,seed[1]+i/2),randomNumberGrid(seed[0]-(i/2),seed[1]+i/2),50,50)
+    var newWall = new Wall(randomNumberGrid(seed[0]-i/3,seed[1]+i/3),randomNumberGrid(seed[0]-(i/3),seed[1]+i/3),50,50)
     newWalls.push(newWall);
   }
   return newWalls;
@@ -404,7 +412,7 @@ function Level(difficulty) {
 Level.prototype.newLevel = function(){
   for (var i=0;i<9;i++) {
     this.levelRoomArray[i] = new Room();
-    this.levelRoomArray[i].fill(5,2);
+    this.levelRoomArray[i].fill(9,2);
   }
 }
 
@@ -412,14 +420,36 @@ Level.prototype.newLevel = function(){
 function Minimap() {
   this.mapRoomArray = []
 }
-Minimap.prototype.draw = function(ctx,room) {
+Minimap.prototype.draw = function(ctx,playerRoom,enemyRoom) {
   ctx.rect(500,0,100,100);
   ctx.stroke();
   ctx.beginPath();
-  ctx.rect(500+((room%3)*33),66-(Math.floor(room/3)*33),33,33);
+  ctx.rect(500+((enemyRoom%3)*33),66-(Math.floor(enemyRoom/3)*33),33,33);
+  ctx.fillStyle = 'yellow';
+  ctx.fill();
+  ctx.closePath();
+  ctx.rect(500,0,100,100);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.rect(500+((playerRoom%3)*33),66-(Math.floor(playerRoom/3)*33),33,33);
   ctx.fillStyle = 'green';
   ctx.fill();
   ctx.closePath();
+}
+
+function Inventory() {
+  this.playerItemArray = []
+}
+Inventory.prototype.draw = function(ctx,game) {
+  ctx.rect(500,535,100,300);
+  ctx.stroke();
+  for(var i=0;i<game.enemy.itemArray.length;i++) {
+    ctx.beginPath();
+    ctx.rect(510,(125+(30*i)),25,25);
+    ctx.fillStyle = 'blue';
+    ctx.fill();
+    ctx.closePath();
+  }
 }
 
 //////////DOOR OBJECT
@@ -439,36 +469,46 @@ Door.prototype.draw = function(ctx) {
 }
 function doorCollision(player,level,game) {
   if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[0])) {
-    player.roomLocation += 3;
-    if (player.roomLocation > 8) {
-      player.roomLocation = 8;
+    if (player.roomLocation < 6) {
+      player.roomLocation += 3;
+      if (player.roomLocation > 8) {
+        player.roomLocation = 8;
+      }
+      player.xPos = 225;
+      player.yPos = 440;
     }
-    player.xPos = 225;
-    player.yPos = 440;
   }
   if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[1])) {
-    player.roomLocation -= 3;
-    if (player.roomLocation < 0) {
-      player.roomLocation = 0;
+    if (player.roomLocation > 2) {
+      player.roomLocation -= 3;
+
+      if (player.roomLocation < 0) {
+        player.roomLocation = 0;
+      }
+      player.xPos = 225;
+      player.yPos = 10;
     }
-    player.xPos = 225;
-    player.yPos = 10;
   }
   if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[2])) {
-    player.roomLocation -= 1;
-    if (player.roomLocation < 0) {
-      player.roomLocation = 0;
+    if (player.roomLocation % 3 != 0) {
+      player.roomLocation -= 1;
+      if (player.roomLocation < 0) {
+        player.roomLocation = 0;
+      }
+      player.xPos = 440;
+      player.yPos = 225;
     }
-    player.xPos = 440;
-    player.yPos = 225;
   }
   if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[3])) {
-    player.roomLocation += 1;
-    if (player.roomLocation > 8) {
-      player.roomLocation = 8;
+    if ((player.roomLocation + 1)% 3 != 0) {
+
+      player.roomLocation += 1;
+      if (player.roomLocation > 8) {
+        player.roomLocation = 8;
+      }
+      player.xPos = 10;
+      player.yPos = 225;
     }
-    player.xPos = 10;
-    player.yPos = 225;
   }
   if (xSoftCollision(player,level.levelRoomArray[player.roomLocation].roomDoorArray[4])) {
     if (player.roomLocation === 4 && player.itemArray.length > 7) {
@@ -505,13 +545,11 @@ function hardCollision(object,obstacleArray) {
 function xEdgeCollision(object,obstacle) {
   if ((object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width) && (object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height)) {
     return 'x';
-    console.log('x')
   }
 }
 function yEdgeCollision(object,obstacle) {
   if ((object.yPos + object.height > obstacle.yPos) && (object.yPos < obstacle.yPos + obstacle.height) && (object.xPos + object.width > obstacle.xPos) && (object.xPos < obstacle.xPos + obstacle.width)) {
     return 'y';
-    console.log('y')
   }
 }
 function edgeCollision(object,obstacleArray) {
@@ -537,6 +575,12 @@ function softCollision(object,itemArray) {
     if(xSoftCollision(object,itemArray[i])) {
       return 'x'
     };
+  }
+}
+
+function enemyCollision(game) {
+  if (((game.player.xPos + game.player.width > game.enemy.xPos - 75 && game.player.xPos < game.enemy.xPos + 75 + game.enemy.width) && (game.player.yPos + game.player.height > game.enemy.yPos - 75 && game.player.yPos < game.enemy.yPos + game.enemy.height + 75)) && game.player.roomLocation === game.enemy.roomLocation) {
+    game.newPlayer();
   }
 }
 
@@ -600,7 +644,8 @@ $(function() {
     game.player.draw(ctx);
     wallArrayDraw(ctx);
     game.level.levelRoomArray[game.player.roomLocation].draw(ctx,game.player);
-    minimap.draw(ctx,game.player.roomLocation);
+    minimap.draw(ctx,game.player.roomLocation,game.enemy.roomLocation);
+    inventory.draw(ctx,game);
   }
   drawInterval = setInterval(draw, 10);
 })
