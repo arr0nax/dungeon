@@ -70,20 +70,34 @@ Player.prototype.move = function(level,game) {
       this.xPos -= this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
-      this.itemArray.push('item')
-      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      if (level.levelRoomArray[this.roomLocation].roomItemArray.length < 9) {
+        game.newPlayer();
+      } else {
+        for (var i=0;i<9;i++) {
+          this.itemArray.push('item')
+          level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+        }
+      }
     }
     doorCollision(this,level,game);
-  };
+  }
+
   if(leftPressed) {
     this.xPos -= this.moveSpeed;
     if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) === 'xy' || edgeCollision(this,wallArray) === 'xy' || spacePressed) {
       this.xPos += this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
-      this.itemArray.push('item')
-      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      if (level.levelRoomArray[this.roomLocation].roomItemArray.length < 9) {
+        game.newPlayer();
+      } else {
+        for (var i=0;i<9;i++) {
+          this.itemArray.push('item')
+          level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+        }
+      }
     }
+
     doorCollision(this,level,game);
   }
   if(upPressed) {
@@ -92,9 +106,16 @@ Player.prototype.move = function(level,game) {
       this.yPos += this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
-      this.itemArray.push('item')
-      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      if (level.levelRoomArray[this.roomLocation].roomItemArray.length < 9) {
+        game.newPlayer();
+      } else {
+        for (var i=0;i<9;i++) {
+          this.itemArray.push('item')
+          level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+        }
+      }
     }
+
     doorCollision(this,level,game);
   }
   if(downPressed) {
@@ -103,9 +124,16 @@ Player.prototype.move = function(level,game) {
       this.yPos -= this.moveSpeed;
     }
     if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
-      this.itemArray.push('item')
-      level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+      if (level.levelRoomArray[this.roomLocation].roomItemArray.length < 9) {
+        game.newPlayer();
+      } else {
+        for (var i=0;i<9;i++) {
+          this.itemArray.push('item')
+          level.levelRoomArray[this.roomLocation].roomItemArray.splice(0,1);
+        }
+      }
     }
+
     doorCollision(this,level,game);
   }
 }
@@ -172,8 +200,11 @@ function Enemy() {
   Enemy.prototype.move = function(level,game) {
     if(rightPressed) {
       this.xPos += this.moveSpeed;
-      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+      if (edgeCollision(this,wallArray)) {
         this.xPos -= this.moveSpeed;
+      }
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray)) {
+        game.newEnemy();
       }
       if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
         this.itemArray.push('item')
@@ -183,8 +214,11 @@ function Enemy() {
     };
     if(leftPressed) {
       this.xPos -= this.moveSpeed;
-      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+      if (edgeCollision(this,wallArray)) {
         this.xPos += this.moveSpeed;
+      }
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray)) {
+        game.newEnemy();
       }
       if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
         this.itemArray.push('item')
@@ -194,8 +228,11 @@ function Enemy() {
     }
     if(upPressed) {
       this.yPos -= this.moveSpeed;
-      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+      if (edgeCollision(this,wallArray)) {
         this.yPos += this.moveSpeed;
+      }
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray)) {
+        game.newEnemy();
       }
       if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
         this.itemArray.push('item')
@@ -205,8 +242,11 @@ function Enemy() {
     }
     if(downPressed) {
       this.yPos += this.moveSpeed;
-      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray) || edgeCollision(this,wallArray)) {
+      if (edgeCollision(this,wallArray)) {
         this.yPos -= this.moveSpeed;
+      }
+      if (hardCollision(this,level.levelRoomArray[this.roomLocation].roomWallArray)) {
+        game.newEnemy();
       }
       if (softCollision(this,level.levelRoomArray[this.roomLocation].roomItemArray)) {
         this.itemArray.push('item')
